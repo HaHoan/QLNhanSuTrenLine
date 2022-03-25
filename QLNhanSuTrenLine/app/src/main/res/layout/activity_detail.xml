@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:fitsSystemWindows="false">
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:theme="@style/Theme.QLNhanSuTrenLine.AppBarOverlay">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/teal_700"
+            app:titleTextColor="@color/white"
+            app:popupTheme="@style/Theme.AppCompat.Light.NoActionBar" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_margin="@dimen/common_margin"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Line"
+            android:layout_marginTop="@dimen/division_text_margin"
+            android:textStyle="bold">
+        </TextView>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:id="@+id/lineTextView"
+            android:hint="Chọn Line"
+            android:padding="12dp"
+            android:gravity="center_vertical"
+            android:drawableRight="@mipmap/arrow"
+            android:background="@android:drawable/editbox_background"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Công đoạn"
+            android:layout_marginTop="@dimen/division_text_margin"
+            android:textStyle="bold">
+        </TextView>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:id="@+id/stationTextView"
+            android:hint="Chọn Công đoạn"
+            android:padding="12dp"
+            android:gravity="center_vertical"
+            android:drawableRight="@mipmap/arrow"
+            android:background="@android:drawable/editbox_background"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Staff Code"
+            android:layout_marginTop="@dimen/edit_text_margin"
+            android:textStyle="bold">
+        </TextView>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/barcode"
+                android:layout_alignParentRight="true"
+                android:id="@+id/btnBarcode"
+                android:background= "@color/white"
+                android:layout_margin="@dimen/common_margin"
+                >
+
+            </ImageButton>
+            <EditText
+                android:id="@+id/code_edt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:imeOptions="actionNext"
+                android:layout_marginTop="@dimen/edit_text_margin"
+                android:layout_toLeftOf="@id/btnBarcode"
+                >
+
+            </EditText>
+        </RelativeLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Thời gian cập nhật"
+            android:layout_marginTop="@dimen/division_text_margin"
+            android:textStyle="bold">
+        </TextView>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/timeTextView"
+            android:layout_marginTop="@dimen/division_text_margin" >
+        </TextView>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvStatus"
+                android:textColor="@color/red"
+                android:gravity="center">
+
+            </TextView>
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
