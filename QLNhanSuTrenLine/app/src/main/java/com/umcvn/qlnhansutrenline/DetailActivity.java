@@ -18,7 +18,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -26,6 +28,7 @@ import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import dmax.dialog.SpotsDialog;
 import retrofit2.Call;
@@ -41,9 +44,12 @@ public class DetailActivity extends AppCompatActivity {
     private ImageButton btnBarcode;
     private ArrayList<String> lineArrayList;
     private ArrayList<String> stationArrayList;
+    private  SpotsDialog dialogLoading;
     private  Dialog dialog;
     private SOService mService;
     private String ID;
+    private static final int BARCODE_ACTIVITY_REQUEST_CODE = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +58,7 @@ public class DetailActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        codeEditText =  findViewById(R.id.code_edt);
+        codeEditText = findViewById(R.id.code_edt);
         lineEditText = findViewById(R.id.lineTextView);
         stationEditText = findViewById(R.id.stationTextView);
         btnBarcode = findViewById(R.id.btnBarcode);
@@ -60,33 +66,23 @@ public class DetailActivity extends AppCompatActivity {
         timeTextView = findViewById(R.id.timeTextView);
         mService = ApiUtils.getSOService();
         Bundle extras = getIntent().getExtras();
-        if(extras != null){
+        if (extras != null) {
             String code = extras.getString("Code");
             String line = extras.getString("Line");
             String process = extras.getString("Process");
             ID = extras.getString("ID");
-            if(code != null && line != null && process != null){
+            if (code != null && line != null && process != null) {
                 codeEditText.setText(code);
                 lineEditText.setText(line);
                 stationEditText.setText(process);
             }
-        }else{
+        } else {
             ID = "";
             timeTextView.setText(Calendar.getInstance().getTime().toString());
         }
+        dialogLoading = new SpotsDialog(this,"Waiting...");
+        getProcessInfos();
 
-        lineArrayList =new ArrayList<>();
-        lineArrayList.add("Line CA-01");
-        lineArrayList.add("Line CA-02");
-        lineArrayList.add("Line CA-03");
-        lineArrayList.add("Line CA-04");
-        lineArrayList.add("Line CA-05");
-
-        stationArrayList =new ArrayList<>();
-        stationArrayList.add("ICT");
-        stationArrayList.add("FCT");
-        stationArrayList.add("VI2");
-        stationArrayList.add("OQC");
         lineEditText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -114,23 +110,48 @@ public class DetailActivity extends AppCompatActivity {
         btnBarcode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                   checkBarcode();
+                checkBarcode();
             }
         });
 
     }
-    private void checkBarcode(){
-        startActivity(new Intent(DetailActivity.this, BarcodeActivity.class));
+
+    private void getProcessInfos() {
+        dialogLoading.show();
+        mService.getProcessInfo().enqueue(new Callback<ProcessModel>() {
+            @Override
+            public void onResponse(Call<ProcessModel> call, Response<ProcessModel> response) {
+                if (response.isSuccessful()) {
+                    ProcessModel infos = response.body();
+                    lineArrayList = infos.LineList;
+                    stationArrayList = infos.ProcessList;
+                } else {
+                    Toast.makeText(DetailActivity.this, "Connect failed!", Toast.LENGTH_SHORT).show();
+                }
+                dialogLoading.dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<ProcessModel> call, Throwable t) {
+
+            }
+        });
     }
-    private  void showDialogSelect(ArrayList arrayList,ActionListenerCallback callback){
-        dialog=new Dialog(DetailActivity.this);
+
+    private void checkBarcode() {
+        Intent intent = new Intent(DetailActivity.this, BarcodeActivity.class);
+        startActivityForResult(intent, BARCODE_ACTIVITY_REQUEST_CODE);
+    }
+
+    private void showDialogSelect(ArrayList arrayList, ActionListenerCallback callback) {
+        dialog = new Dialog(DetailActivity.this);
         dialog.setContentView(R.layout.dialog_searchable_spinner);
-        dialog.getWindow().setLayout(650,800);
+        dialog.getWindow().setLayout(650, 800);
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         dialog.show();
-        EditText editText=dialog.findViewById(R.id.edit_text);
-        ListView listView=dialog.findViewById(R.id.list_view);
-        ArrayAdapter<String> adapter=new ArrayAdapter<>(DetailActivity.this, android.R.layout.simple_list_item_1, arrayList);
+        EditText editText = dialog.findViewById(R.id.edit_text);
+        ListView listView = dialog.findViewById(R.id.list_view);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(DetailActivity.this, android.R.layout.simple_list_item_1, arrayList);
         listView.setAdapter(adapter);
         editText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -152,7 +173,7 @@ public class DetailActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    callback.onActionSuccess(adapter.getItem(position));
+                callback.onActionSuccess(adapter.getItem(position));
                 dialog.dismiss();
             }
         });
@@ -175,17 +196,17 @@ public class DetailActivity extends AppCompatActivity {
             b.setMessage("Bạn có muốn lưu không?");
             b.setPositiveButton("Đồng ý", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    if(lineEditText.getText().toString().trim().length() == 0){
+                    if (lineEditText.getText().toString().trim().length() == 0) {
                         statusTextView.setText("Chưa chọn line");
                         return;
                     }
 
-                    if(stationEditText.getText().toString().trim().length() == 0){
+                    if (stationEditText.getText().toString().trim().length() == 0) {
                         statusTextView.setText("Chưa chọn công đoạn");
                         return;
                     }
 
-                    if(codeEditText.getText().toString().trim().length() == 0){
+                    if (codeEditText.getText().toString().trim().length() == 0) {
                         codeEditText.requestFocus();
                         statusTextView.setText("Chưa nhập staff code");
                         return;
@@ -202,37 +223,45 @@ public class DetailActivity extends AppCompatActivity {
             AlertDialog al = b.create();
             al.show();
             return true;
-        }else if(id == android.R.id.home){
+        } else if (id == android.R.id.home) {
             finish();
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    public interface ActionListenerCallback  {
+    public interface ActionListenerCallback {
         void onActionSuccess(String successMessage);
     }
-    private void saveToDb(){
-        SpotsDialog dialog = new SpotsDialog(this,"Waiting...");
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == BARCODE_ACTIVITY_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                // Get String data from Intent
+                String barcode = data.getStringExtra("Barcode");
+                codeEditText.setText(barcode);
+            }
+        }
+    }
+
+    private void saveToDb() {
+        SpotsDialog dialog = new SpotsDialog(this, "Waiting...");
         dialog.show();
-        mService.savePost(codeEditText.getText().toString(),lineEditText.getText().toString(),stationEditText.getText().toString(),ID).enqueue(new Callback<ResponseAPI>() {
+        mService.savePost(codeEditText.getText().toString(), lineEditText.getText().toString(), stationEditText.getText().toString(), ID).enqueue(new Callback<ResponseAPI>() {
             @Override
             public void onResponse(Call<ResponseAPI> call, Response<ResponseAPI> response) {
-                if(response.isSuccessful() ){
-                    if(response.body().status.equals("OK")){
+                if (response.isSuccessful()) {
+                    if (response.body().status.equals("OK")) {
                         Intent intent = new Intent();
-//                        intent.putExtra("IDOld",ID);
-//                        intent.putExtra("Code",codeEditText.getText().toString());
-//                        intent.putExtra("Line",lineEditText.getText().toString());
-//                        intent.putExtra("Process",stationEditText.getText().toString());
-//                        intent.putExtra("ID",response.body().message);
                         setResult(RESULT_OK, intent);
                         finish();
-                    }else{
+                    } else {
                         statusTextView.setText(response.body().status);
                     }
 
-                }else{
+                } else {
                     statusTextView.setText("Send not successfully!");
                 }
                 dialog.dismiss();

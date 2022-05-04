@@ -30,14 +30,27 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             >
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/barcode"
+                android:layout_alignParentLeft="true"
+                android:id="@+id/btnBarcode"
+                android:background= "@color/white"
+                android:layout_margin="@dimen/common_margin"
+                >
+
+            </ImageButton>
             <EditText
                 android:id="@+id/searchEdt"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Nhập mã Code..."
                 android:layout_toLeftOf="@id/searchBtn"
+                android:layout_toRightOf="@+id/btnBarcode"
                 android:layout_margin="@dimen/common_margin">
             </EditText>
+
             <Button
                 android:id="@+id/searchBtn"
                 android:layout_width="wrap_content"

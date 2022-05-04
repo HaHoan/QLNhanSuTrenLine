@@ -13,6 +13,9 @@ public interface SOService {
     @GET("/api/Values")
     Call<List<PersonInfo>> getAllStaffs();
 
+    @GET("/api/process")
+    Call<ProcessModel> getProcessInfo();
+
     @GET("/api/Values")
     Call<PersonInfo> getStaffBy(@Query("staffCode") String staffCode);
 

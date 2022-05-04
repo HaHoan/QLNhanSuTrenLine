@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -33,6 +34,8 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
     private static final int SECOND_ACTIVITY_REQUEST_CODE = 0;
+    private static final int BARCODE_ACTIVITY_REQUEST_CODE = 1;
+    private static final int MAX_ITEM_IN_LIST = 100;
     private EditText searchEdt;
     private List<PersonInfo> listStaffs;
     private List<PersonInfo> listStaffsLoaded;
@@ -42,12 +45,14 @@ public class MainActivity extends AppCompatActivity {
     private SwipeRefreshLayout swipeRefreshLayout;
     private Button searchButton;
     private  SpotsDialog dialog;
+    private ImageButton btnBarcode;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         searchEdt = findViewById(R.id.searchEdt);
         searchButton = findViewById(R.id.searchBtn);
+        btnBarcode = findViewById(R.id.btnBarcode);
        Toolbar toolbar = findViewById(R.id.toolbar);
        setSupportActionBar(toolbar);
         mService = ApiUtils.getSOService();
@@ -58,22 +63,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
-        searchEdt.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-              //  filter(s.toString());
-            }
-        });
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -88,6 +78,14 @@ public class MainActivity extends AppCompatActivity {
                 loadAllStaffs();
             }
         });
+        btnBarcode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, BarcodeActivity.class);
+                startActivityForResult(intent, BARCODE_ACTIVITY_REQUEST_CODE);
+            }
+        });
+
     }
     private void searchStaff(){
         if(searchEdt.getText().toString().trim().length() == 0){
@@ -140,7 +138,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<PersonInfo>> call, Response<List<PersonInfo>> response) {
                 if(response.isSuccessful()){
-                    listStaffsLoaded = response.body();
+                    if(response.body().size() > MAX_ITEM_IN_LIST){
+                        listStaffsLoaded = response.body().subList(0,MAX_ITEM_IN_LIST);
+                    }else{
+                        listStaffsLoaded = response.body();
+                    }
                    replaceOldListWithNewList(listStaffsLoaded);
 
                 }else{
@@ -192,20 +194,13 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == SECOND_ACTIVITY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-
-//                // Get String data from Intent
-//                String IDOld = data.getStringExtra("IDOld");
-//                if(IDOld.equals("")){
-//                    String code = data.getStringExtra("Code");
-//                    String line = data.getStringExtra("Line");
-//                    String process = data.getStringExtra("Process");
-//                    String Id = data.getStringExtra("ID");
-//                    insertSingleItem(new PersonInfo(code, line, process,Id));
-//                }else{
-//                    loadAllStaffs();
-//                }
                 loadAllStaffs();
-
+            }
+        }else if(requestCode == BARCODE_ACTIVITY_REQUEST_CODE){
+            if (resultCode == RESULT_OK) {
+                String barcode = data.getStringExtra("Barcode");
+                searchEdt.setText(barcode);
+                searchStaff();
             }
         }
     }
